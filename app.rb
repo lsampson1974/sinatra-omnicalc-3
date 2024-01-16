@@ -4,11 +4,25 @@ require "sinatra/reloader"
 require "http"
 require "json"
 require "uri"
+require "sqlite3"
 
-# We will take a crack at building this :
+# Let's include all our keys :
+
 google_maps_key = ENV.fetch("GMAPS_KEY")
 pirate_weather_key = ENV.fetch("PIRATE_WEATHER_KEY")
 open_ai_api_key = ENV.fetch("OPEN_AI_KEY")
+
+SQLite3::Database.open("chat_history.db") do |db|
+
+  db.execute <<~SQL
+  CREATE TABLE chat_history(
+    user_name TEXT,
+    chat_data TEXT
+  )
+  SQL
+
+
+end
 
 
 get("/") do
@@ -104,3 +118,13 @@ post ("/process_single_message") do
 end
 
 #==========================================================
+
+get ("/chat") do
+  erb(:chat)
+end
+
+#------------------
+
+post("/char_response") do
+  #erb(:chat_response)
+end
