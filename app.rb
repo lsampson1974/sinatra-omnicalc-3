@@ -5,18 +5,23 @@ require "http"
 require "json"
 require "uri"
 
-#We will take a crack at building this :
+# We will take a crack at building this :
 google_maps_key = ENV.fetch("GMAPS_KEY")
 pirate_weather_key = ENV.fetch("PIRATE_WEATHER_KEY")
+open_ai_api_key = ENV.fetch("OPEN_AI_KEY")
 
 
 get("/") do
   redirect("/umbrella")
 end
 
+#==========================================================
+
 get("/umbrella") do
   erb(:umbrella)
 end
+
+#------------------
 
 post("/process_umbrella") do
 
@@ -35,8 +40,6 @@ post("/process_umbrella") do
 
   weather_data = JSON.parse(HTTP.get(pirate_weather_url), object_class: OpenStruct)
 
-  puts weather_data
-  
   @current_temperature = weather_data.currently.temperature
 
   percentagePrecipProbability = weather_data.hourly.data[0].precipProbability*100
@@ -55,6 +58,49 @@ post("/process_umbrella") do
 
 end
 
-get ("/gtp_single_message") do
+#==========================================================
+
+get ("/message") do
   erb(:gtp_single_message)
 end
+
+#------------------
+
+post ("/process_single_message") do
+
+  @user_message = params.fetch("the_message")
+
+  request_headers_hash = {
+  "Authorization" => "Bearer #{open_ai_api_key}",
+  "content-type" => "application/json"}
+
+  request_body_hash = {
+    "model" => "gpt-3.5-turbo",
+    "messages" => [
+      {
+        "role" => "system",
+        "content" => "You are a helpful assistant who talks like Shakespeare."
+      },
+      {
+        "role" => "user",
+        "content" => "#{@user_message}"
+      }
+    ]
+  }
+
+  request_body_json = JSON.generate(request_body_hash)
+
+  raw_response = HTTP.headers(request_headers_hash).post(
+    "https://api.openai.com/v1/chat/completions",
+    :body => request_body_json
+  ).to_s
+
+  parsed_response = JSON.parse(raw_response, object_class: OpenStruct)
+
+  @response_message = parsed_response.choices[0].message.content
+
+  erb(:gtp_response)
+  
+end
+
+#==========================================================
