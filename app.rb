@@ -1,7 +1,7 @@
 require "sinatra"
 require "sinatra/reloader"
 
-#Will take a crack at building this :
+#We will take a crack at building this :
 
 get("/") do
   "
