@@ -27,14 +27,7 @@ begin
     db.execute action
   end
 
-  insert_records = [
-    'insert into users values ("user", "user")',
-    'insert into users values ("assistant","computer")'
-  ]
 
-  for insert_record in insert_records
-    db.execute insert_record
-  end
 
 #puts "\nSelecting from both tables - ALL possible records"
 #db.execute( "select * from chat_history" ) do |row|
