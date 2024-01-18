@@ -152,15 +152,15 @@ end
 
 post("/chat_response") do
  
-  user_message = parse.fetch["user_message"]
+  user_message = params.fetch("user_message")
   
   begin
     
     db = SQLite3::Database.open "chat_history.db"
 
     insert_records = [
-      "insert into chat_history values (\"user\", #{user_message})",
-      "insert into chat_history values (\"assistant\",\"answer\")"
+      "insert into chat_history values ('user', '#{user_message}')",
+      "insert into chat_history values ('assistant','answer')"
     ]
   
     for insert_record in insert_records
