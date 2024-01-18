@@ -12,22 +12,54 @@ google_maps_key = ENV.fetch("GMAPS_KEY")
 pirate_weather_key = ENV.fetch("PIRATE_WEATHER_KEY")
 open_ai_api_key = ENV.fetch("OPEN_AI_KEY")
 
-SQLite3::Database.open("chat_history.db") do |db|
+# Let's setup our chat history DB :
 
-  db.execute <<~SQL
-  CREATE TABLE chat_history(
-    user_name TEXT,
-    chat_data TEXT
-  )
-  SQL
+begin
+    
+  db = SQLite3::Database.open "chat_history.db"
+
+  setups = [
+    'drop table if exists chat_history',
+    'create table chat_history(username text, message text)'
+  ]
+
+  for action in setups
+    db.execute action
+  end
+
+  insert_records = [
+    'insert into users values ("user", "user")',
+    'insert into users values ("assistant","computer")'
+  ]
+
+  for insert_record in insert_records
+    db.execute insert_record
+  end
+
+#puts "\nSelecting from both tables - ALL possible records"
+#db.execute( "select * from chat_history" ) do |row|
+#    puts row
+#end
 
 
+    #'insert into chat_history values ("someuser","Hello","202401190527")'
+    #'insert into chat_history values ("computeuser", "Hi how are you ?","202401190528")'
+
+  
+rescue SQLite3::Exception => excp  
+  puts "Issue with DB : #{excp} "
+  
+ensure
+  db.close if db
 end
+
+
 
 
 get("/") do
   redirect("/umbrella")
 end
+
 
 #==========================================================
 
@@ -125,6 +157,34 @@ end
 
 #------------------
 
-post("/char_response") do
-  #erb(:chat_response)
+post("/chat_response") do
+ 
+  user_message = parse.fetch["user_message"]
+  
+  begin
+    
+    db = SQLite3::Database.open "chat_history.db"
+
+    insert_records = [
+      "insert into chat_history values (\"user\", #{user_message})",
+      "insert into chat_history values (\"assistant\",\"answer\")"
+    ]
+  
+    for insert_record in insert_records
+      db.execute insert_record
+    end
+  
+    puts "\nSelecting from both tables - ALL possible records"
+    db.execute( "select * from chat_history" ) do |row|
+       puts row
+    end
+    
+  rescue SQLite3::Exception => excp
+    
+    puts "Issue with DB : #{excp} "
+    
+  ensure
+    db.close if db
+  end
+  
 end
