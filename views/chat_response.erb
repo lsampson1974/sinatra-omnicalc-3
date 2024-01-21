@@ -1,0 +1,34 @@
+<% begin %>
+    
+   <% db = SQLite3::Database.open "chat_history.db" %>
+
+   <dl> 
+
+    <% db.execute( "select username, message from chat_history" ) do |row| %>
+       <dt><%= row[0] %></dt>
+       <dd><%= row[1] %></dd>
+    
+    <% end %>
+
+    </dl>
+
+  <% rescue SQLite3::Exception => excp %>
+  <% puts "Issue with DB : #{excp} " %>
+    
+  <% ensure %>
+    <% db.close if db %>
+  <% end %>
+
+<form action="/chat_response" method="post">
+  <label for="new_message_field">You:</label>
+  
+  <input id="new_message" type="text" name="user_message" placeholder="Enter a message....">
+
+  <button>Send</button>
+</form>
+
+<hr>
+
+<form action="/clear_chat" method="post">
+  <button>Clear chat history</button>
+</form>
